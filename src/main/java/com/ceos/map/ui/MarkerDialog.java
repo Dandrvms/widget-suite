@@ -14,6 +14,7 @@ public class MarkerDialog extends Dialog<Boolean> {
 
     private final TextField displayField = new TextField();
     private final TextField nameField = new TextField();
+    private final TextField iconField = new TextField();
 
     public MarkerDialog(Double lat, Double lon) {
         setTitle("Setup Marker");
@@ -21,9 +22,6 @@ public class MarkerDialog extends Dialog<Boolean> {
         stage.getIcons().add(new Image("/icons/marker.png")); 
         
         setHeaderText("Choose Phoebus display binding.");
-
-
-
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
@@ -35,11 +33,16 @@ public class MarkerDialog extends Dialog<Boolean> {
         grid.add(displayField, 1, 1);
         filePicker(grid);
 
+        grid.add(new Label("Icon image:"), 0, 2);
+        iconField.setEditable(false);
+        grid.add(iconField, 1, 2);
+        iconPicker(grid);
+
         getDialogPane().setContent(grid);
         getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         
-        grid.add(new Label("Latitude: " + lat), 0, 2);
-        grid.add(new Label("Longitude: " + lon), 0, 3);
+        grid.add(new Label("Latitude: " + lat), 0, 3);
+        grid.add(new Label("Longitude: " + lon), 0, 4);
 
         setResultConverter(button -> {
             if (button == ButtonType.OK) {
@@ -65,6 +68,14 @@ public class MarkerDialog extends Dialog<Boolean> {
         }
         return "";
     }
+
+    public String getIcon(){
+        String icon = this.iconField.getText();
+        if(icon != null){
+            return icon;
+        }
+        return "";
+    }
     
     private void filePicker(GridPane grid){
         Button browse = new Button("...");
@@ -85,7 +96,26 @@ public class MarkerDialog extends Dialog<Boolean> {
         });
         
         grid.add(browse, 2, 1);
-        
-       
+    }
+
+    private void iconPicker(GridPane grid){
+        Button browse = new Button("...");
+
+        browse.setOnAction(e -> {
+            FileChooser fc = new FileChooser();
+            fc.setTitle("Choose icon image");
+
+            fc.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Image files", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp")
+            );
+
+            File selected = fc.showOpenDialog(getDialogPane().getScene().getWindow());
+
+            if (selected != null){
+                iconField.setText(selected.getAbsolutePath());
+            }
+        });
+
+        grid.add(browse, 2, 2);
     }
 }

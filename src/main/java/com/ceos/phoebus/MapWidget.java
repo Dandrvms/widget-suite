@@ -1,13 +1,10 @@
 package com.ceos.phoebus;
 
 import com.ceos.map.model.MarkerData;
-import com.ceos.map.model.MarkerIcon;
 
-import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import org.csstudio.display.builder.model.ArrayWidgetProperty;
 import org.csstudio.display.builder.model.StructuredWidgetProperty;
@@ -18,12 +15,8 @@ import org.csstudio.display.builder.model.WidgetPropertyCategory;
 import org.csstudio.display.builder.model.WidgetPropertyDescriptor;
 import org.csstudio.display.builder.model.properties.CommonWidgetProperties;
 
-import static org.csstudio.display.builder.model.properties.CommonWidgetProperties.propItemsFromPV;
-import org.csstudio.display.builder.model.properties.EnumWidgetProperty;
-
 import org.csstudio.display.builder.model.properties.StringWidgetProperty;
 import org.csstudio.display.builder.model.widgets.WritablePVWidget;
-import org.python.modules.jffi.Structure;
 
 /**
  *
@@ -59,20 +52,15 @@ public class MapWidget extends WritablePVWidget {
     public static final StructuredWidgetProperty.Descriptor propMarker
             = new StructuredWidgetProperty.Descriptor(WidgetPropertyCategory.MISC, "marker", "Marker");
 
-    public static final WidgetPropertyDescriptor<MarkerIcon> propIconType
-            = new WidgetPropertyDescriptor<MarkerIcon>(WidgetPropertyCategory.MISC, "icon_type", "Icon Type") {
-
-        @Override
-        public WidgetProperty<MarkerIcon> createProperty(final Widget widget, final MarkerIcon defaultValue) {
-            return new EnumWidgetProperty<>(this, widget, defaultValue);
-        }
-    };
+    public static final WidgetPropertyDescriptor<String> propIconPath =
+            CommonWidgetProperties.newFilenamePropertyDescriptor(
+                    WidgetPropertyCategory.MISC, "icon_path", "Icon Image");
 
     public static final ArrayWidgetProperty.Descriptor<StructuredWidgetProperty> propCoords
             = new ArrayWidgetProperty.Descriptor<>(
                     WidgetPropertyCategory.MISC, "coords", "Markers",
                     (widget, index) -> propMarker.createProperty(widget,
-                            markerProperties(widget, 0.0, 0.0, "Marker " + index, "", MarkerIcon.DEFAULT)
+                            markerProperties(widget, 0.0, 0.0, "Marker " + index, "", "")
                             ), 0
             );
 
@@ -84,7 +72,7 @@ public class MapWidget extends WritablePVWidget {
     @Override
     protected void defineProperties(final List<WidgetProperty<?>> properties) {
         super.defineProperties(properties);
-        properties.add(coords = new MarkersProperty(propCoords, this, Arrays.asList()));
+        properties.add(coords = new MarkersProperty(propCoords, this, List.of()));
         properties.add(host = propHost.createProperty(this, "http://172.28.41.114/hot/"));
     }
 
@@ -97,9 +85,9 @@ public class MapWidget extends WritablePVWidget {
     }
 
 
-    public StructuredWidgetProperty addMarker(double lat, double lon, String display, String name) throws Exception {
+    public StructuredWidgetProperty addMarker(double lat, double lon, String display, String name, String iconPath) throws Exception {
         StructuredWidgetProperty newMarker = propMarker.createProperty(this,
-                markerProperties(this, lat, lon, name, display, MarkerIcon.DEFAULT));
+                markerProperties(this, lat, lon, name, display, iconPath));
 
         coords.addElement(newMarker);
         return newMarker;
@@ -107,7 +95,7 @@ public class MapWidget extends WritablePVWidget {
 
 
     private static List<WidgetProperty<?>> markerProperties(Widget widget,
-                                                            double lat, double lon, String name, String display, MarkerIcon icon) {
+                                                            double lat, double lon, String name, String display, String iconPath) {
         return Arrays.asList(
                 CommonWidgetProperties.newDoublePropertyDescriptor(WidgetPropertyCategory.MISC, "lat", "Latitude")
                         .createProperty(widget, lat),
@@ -117,7 +105,7 @@ public class MapWidget extends WritablePVWidget {
                         .createProperty(widget, name),
                 CommonWidgetProperties.newFilenamePropertyDescriptor(WidgetPropertyCategory.MISC, "bob", "Display binding")
                         .createProperty(widget, display),
-                propIconType.createProperty(widget, icon)
+                propIconPath.createProperty(widget, iconPath)
         );
     }
 
@@ -130,7 +118,7 @@ public class MapWidget extends WritablePVWidget {
                     (Double) p.get(IDX_LON).getValue(),
                     (String) p.get(IDX_NAME).getValue(),
                     (String) p.get(IDX_BOB).getValue(),
-                    (MarkerIcon) p.get(IDX_ICON).getValue()
+                    (String) p.get(IDX_ICON).getValue()
             ));
         }
         return result;
@@ -139,14 +127,13 @@ public class MapWidget extends WritablePVWidget {
     public MarkerData getMarker(int index) throws Exception {
         List<StructuredWidgetProperty> markers = new ArrayList<>(coords.getValue());
         List<WidgetProperty<?>> p = markers.get(index).getValue();
-        MarkerData marker = new MarkerData(
+        return new MarkerData(
                 (Double) p.get(IDX_LAT).getValue(),
                 (Double) p.get(IDX_LON).getValue(),
                 (String) p.get(IDX_NAME).getValue(),
                 (String) p.get(IDX_BOB).getValue(),
-                (MarkerIcon) p.get(IDX_ICON).getValue()
+                (String) p.get(IDX_ICON).getValue()
         );
-        return marker;
     }
     
     public void removeMarker(int index) throws Exception {
@@ -156,11 +143,11 @@ public class MapWidget extends WritablePVWidget {
         coords.setValue(current);
     }
 
-    public void updateMarker(int index, String name, String display, MarkerIcon icon) throws Exception {
+    public void updateMarker(int index, String name, String display, String iconPath) throws Exception {
         List<StructuredWidgetProperty> markers = new ArrayList<>(coords.getValue());
         List<WidgetProperty<?>> old = markers.get(index).getValue();
 
-        update(index, name, display, icon,
+        update(index, name, display, iconPath,
                 (Double) old.get(IDX_LAT).getValue(),
                 (Double) old.get(IDX_LON).getValue()
         );
@@ -173,15 +160,14 @@ public class MapWidget extends WritablePVWidget {
         return update(index,
                 (String) old.get(IDX_NAME).getValue(),
                 (String) old.get(IDX_BOB).getValue(),
-                (MarkerIcon) old.get(IDX_ICON).getValue(),
+                (String) old.get(IDX_ICON).getValue(),
                 marker.getPoint().getLatitude(),
                 marker.getPoint().getLongitude()
         );
     }
 
-    private StructuredWidgetProperty update(int index, String name, String display, MarkerIcon icon, Double lat, Double lon){
+    private StructuredWidgetProperty update(int index, String name, String display, String iconPath, Double lat, Double lon){
         List<StructuredWidgetProperty> markers = new ArrayList<>(coords.getValue());
-        List<WidgetProperty<?>> old = markers.get(index).getValue();
 
         StructuredWidgetProperty edited = propMarker.createProperty(this,
                 markerProperties(this,
@@ -189,7 +175,7 @@ public class MapWidget extends WritablePVWidget {
                         lon,
                         name,
                         display,
-                        icon));
+                        iconPath));
         markers.set(index, edited);
         coords.setValue(markers);
 

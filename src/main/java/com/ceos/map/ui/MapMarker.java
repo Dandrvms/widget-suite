@@ -1,8 +1,9 @@
 package com.ceos.map.ui;
 
-import com.ceos.map.model.MarkerIcon;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+
 import javafx.scene.Group;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -22,15 +23,15 @@ import org.csstudio.display.builder.runtime.script.ScriptUtil;
  * Location Marker
  *
  */
-public class MapMarker extends Group /*Circle*/ {
+public class MapMarker extends Group {
 
     private String display = "";
     private Map<String, String> macros = new HashMap<>();
 
-    public MapMarker(MarkerIcon icon) {
+    public MapMarker(String iconPath) {
         this.setPickOnBounds(false);
 
-        Image image = getImage(icon);
+        Image image = getImage(iconPath);
 
         if (image != null) {
             ImageView imagev = new ImageView(image);
@@ -44,35 +45,23 @@ public class MapMarker extends Group /*Circle*/ {
             circle.setStrokeWidth(2);
             this.getChildren().add(circle);
         }
-//        super(7, Color.RED);
-//        this.setStroke(Color.WHITE);
-//        this.setStrokeWidth(2);
     }
 
-    private Image getImage(MarkerIcon icon) {
-        String path = "";
-        switch (icon) {
-            case DEFAULT:
-                path = "/icons/marker.png";
-                break;
-            case ZOOM:
-                path = "/icons/marker.png";
-                break;
-            case DRILL:
-                path = "/icons/drill.png";
-                break;
-            case PUMP:
-                path = "/icons/marker.png";
-                break;
-            default:
-                path = "/icons/marker.png";
-                break;
+    private Image getImage(String iconPath) {
+        if (iconPath != null && !iconPath.isEmpty()) {
+            File file = new File(iconPath);
+            if (file.exists()) {
+                try {
+                    return new Image(file.toURI().toString());
+                } catch (Exception e) {
+                    System.out.println("No se pudo cargar el icono custom: " + iconPath);
+                }
+            }
         }
-
         try {
-            return new Image(getClass().getResourceAsStream(path));
+            return new Image(getClass().getResourceAsStream("/icons/marker.png"));
         } catch (Exception e) {
-            System.out.println("No se pudo cargar el ícono: " + path);
+            System.out.println("No se pudo cargar el icono por defecto");
             return null;
         }
     }

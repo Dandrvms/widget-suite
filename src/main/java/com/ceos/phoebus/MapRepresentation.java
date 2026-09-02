@@ -67,7 +67,7 @@ public class MapRepresentation extends JFXBaseRepresentation<MapNode, MapWidget>
                             MarkerDialog d = new MarkerDialog(lat, lon);
                             Optional<Boolean> result = d.showAndWait();
                             if (result.isPresent() && result.get()) {
-                                addMarkerToModel(lat, lon, d.getDisplay(), d.getName());
+                                addMarkerToModel(lat, lon, d.getDisplay(), d.getName(), d.getIcon());
                             }
                         } catch (Exception ex) {
                             System.getLogger(MapRepresentation.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
@@ -79,7 +79,7 @@ public class MapRepresentation extends JFXBaseRepresentation<MapNode, MapWidget>
                     -> Platform.runLater(() -> {
                         try {
                             MarkerData marker = model_widget.getMarker(index);
-                            EditDialog e = new EditDialog(marker.getPoint().getLatitude(), marker.getPoint().getLongitude(), marker.getName(), marker.getDisplayPath(), marker.getIconType());
+                            EditDialog e = new EditDialog(marker.getPoint().getLatitude(), marker.getPoint().getLongitude(), marker.getName(), marker.getDisplayPath(), marker.getIconPath());
                             Optional<Boolean> result = e.showAndWait();
                             if(result.isPresent() && result.get()) {
                                 model_widget.updateMarker(index, e.getName(), e.getDisplay(), e.getIcon());
@@ -131,8 +131,8 @@ public class MapRepresentation extends JFXBaseRepresentation<MapNode, MapWidget>
         toolkit.scheduleUpdate(this);
     }
 
-    private void addMarkerToModel(double lat, double lon, String display, String name) throws Exception {
-        StructuredWidgetProperty newMarker = model_widget.addMarker(lat, lon, display, name);
+    private void addMarkerToModel(double lat, double lon, String display, String name, String iconPath) throws Exception {
+        StructuredWidgetProperty newMarker = model_widget.addMarker(lat, lon, display, name, iconPath);
         for (WidgetProperty<?> p : newMarker.getValue()) {
             p.addUntypedPropertyListener(markerListener);
         }

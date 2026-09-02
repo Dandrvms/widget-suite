@@ -11,24 +11,24 @@ import com.gluonhq.maps.MapPoint;
 public class MarkerData {
         private final MapPoint point; 
         private final String name;
-        private final MarkerIcon icon;
+        private final String iconPath;
         private final String displayPath;
-        public MarkerData(double lat, double lon, String name, String displayPath, MarkerIcon icon){
+        public MarkerData(double lat, double lon, String name, String displayPath, String iconPath){
             this.point = new MapPoint(lat, lon);
             this.name = name;
-            this.icon = icon;
+            this.iconPath = iconPath;
             this.displayPath = displayPath;
         }
 
         public MarkerData(double lat, double lon){
             this.point = new MapPoint(lat, lon);
             this.name = null;
-            this.icon = null;
+            this.iconPath = null;
             this.displayPath = null;
         }
 
         public MapPoint getPoint() { return point; }
         public String getName() { return name; }
-        public MarkerIcon getIconType() { return icon; }
+        public String getIconPath() { return iconPath; }
         public String getDisplayPath() { return displayPath; }
 }

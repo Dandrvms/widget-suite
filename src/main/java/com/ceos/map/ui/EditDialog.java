@@ -2,7 +2,6 @@ package com.ceos.map.ui;
 
 import java.io.File;
 
-import com.ceos.map.model.MarkerIcon;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
@@ -16,8 +15,9 @@ public class EditDialog extends Dialog<Boolean> {
 
     private final TextField displayField = new TextField();
     private final TextField nameField = new TextField();
+    private final TextField iconField = new TextField();
 
-    public EditDialog(Double lat, Double lon, String name, String display, MarkerIcon icon) {
+    public EditDialog(Double lat, Double lon, String name, String display, String iconPath) {
         setTitle("Edit Marker");
         Stage stage = (Stage) this.getDialogPane().getScene().getWindow();
         stage.getIcons().add(new Image("/icons/marker.png"));
@@ -36,11 +36,17 @@ public class EditDialog extends Dialog<Boolean> {
         grid.add(displayField, 1, 1);
         filePicker(grid);
 
+        grid.add(new Label("Icon image:"), 0, 2);
+        iconField.setText(iconPath);
+        iconField.setEditable(false);
+        grid.add(iconField, 1, 2);
+        iconPicker(grid);
+
         getDialogPane().setContent(grid);
         getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        grid.add(new Label("Latitude: " + lat), 0, 2);
-        grid.add(new Label("Longitude: " + lon), 0, 3);
+        grid.add(new Label("Latitude: " + lat), 0, 3);
+        grid.add(new Label("Longitude: " + lon), 0, 4);
 
         setResultConverter(button -> {
             if (button == ButtonType.OK) {
@@ -67,8 +73,12 @@ public class EditDialog extends Dialog<Boolean> {
         return "";
     }
 
-    public MarkerIcon getIcon(){
-        return MarkerIcon.DEFAULT;
+    public String getIcon(){
+        String icon = this.iconField.getText();
+        if(icon != null){
+            return icon;
+        }
+        return "";
     }
 
     private void filePicker(GridPane grid){
@@ -90,7 +100,26 @@ public class EditDialog extends Dialog<Boolean> {
         });
 
         grid.add(browse, 2, 1);
+    }
 
+    private void iconPicker(GridPane grid){
+        Button browse = new Button("...");
 
+        browse.setOnAction(e -> {
+            FileChooser fc = new FileChooser();
+            fc.setTitle("Choose icon image");
+
+            fc.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Image files", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp")
+            );
+
+            File selected = fc.showOpenDialog(getDialogPane().getScene().getWindow());
+
+            if (selected != null){
+                iconField.setText(selected.getAbsolutePath());
+            }
+        });
+
+        grid.add(browse, 2, 2);
     }
 }

@@ -34,6 +34,7 @@ import com.gluonhq.maps.MapPoint;
 import com.gluonhq.maps.MapView;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 
@@ -137,7 +138,7 @@ public class MapNode extends StackPane {
 
     private void initContextMenu() {
         MenuItem addItem = new MenuItem("Add Marker Here");
-        ImageView add = new ImageView(new Image(getClass().getResourceAsStream("/icons/markeradd.png")));
+        ImageView add = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/markeradd.png"))));
         add.setFitWidth(16);
         add.setFitHeight(16);
 
@@ -145,14 +146,14 @@ public class MapNode extends StackPane {
         addMenu.getItems().add(addItem);
 
         MenuItem editItem = new MenuItem("Edit Marker");
-        ImageView edt = new ImageView(new Image(getClass().getResourceAsStream("/icons/markeredit.png")));
+        ImageView edt = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/markeredit.png"))));
         edt.setFitWidth(16);
         edt.setFitHeight(16);
         editItem.setGraphic(edt);
 
         MenuItem delItem = new MenuItem("Delete Marker");
 
-        ImageView del = new ImageView(new Image(getClass().getResourceAsStream("/icons/markerdelete.png")));
+        ImageView del = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/markerdelete.png"))));
         del.setFitWidth(16);
         del.setFitHeight(16);
         delItem.setGraphic(del);
@@ -201,7 +202,7 @@ public class MapNode extends StackPane {
                 editMenu.hide();
             }
 
-            MenuItem addItem = addMenu.getItems().get(0);
+            MenuItem addItem = addMenu.getItems().getFirst();
 
             addItem.setOnAction(ev
                     -> onAddMarker.accept(point.getLatitude(), point.getLongitude())
@@ -219,7 +220,7 @@ public class MapNode extends StackPane {
     }
 
     private void addMarker(MarkerData point, int index) {
-        MapMarker marker = new MapMarker(point.getIconType());
+        MapMarker marker = new MapMarker(point.getIconPath());
         marker.setDisplay(point.getDisplayPath());
         marker.setUserData(index);
 
